@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-Item DC Dry</title>
+    <style>
+  :root {
+    --primary-color: #1a73e8;       /* Biru standar Google */
+    --primary-hover: #1557b0;       /* Biru lebih gelap untuk efek hover */
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .mobile-container {
+    width: 100%;
+    max-width: 480px;
+    height: 100vh;
+    max-height: 850px;
+    background-color: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+  }
+
+  @media (min-width: 481px) {
+    .mobile-container {
+      border-radius: 24px;
+      border: 8px solid #1f2937;
+    }
+  }
+
+  .header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .scan-section {
+    background: #e8f0fe; /* Latar biru muda lembut ala Google */
+    border: 2px dashed var(--primary-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .scan-section input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-top: 10px;
+    outline: none;
+  }
+
+  .details-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    display: none;
+  }
+
+  .details-card.active {
+    display: block;
+  }
+
+  .details-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--bg-color);
+    padding-bottom: 8px;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+
+  .detail-label {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .detail-value {
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: right;
+  }
+
+  .qty-input-section {
+    margin-top: 16px;
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .qty-input-section label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .qty-input-section input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .btn-submit {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+
+  .btn-submit:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .loading {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 15px;
+    display: none;
+  }
+
+  .placeholder-text {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 30px;
+  }
+</style>
+
+</head>
+<body>
+
+    <div class="mobile-container">
+        <div class="header">Scan Barang STO - DC Dry</div>
+        <div class="content">
+            <div class="scan-section">
+                <label for="barcodeInput" style="font-weight: 600; font-size: 0.95rem;">Scan / Ketik Barcode</label>
+                <input type="text" id="barcodeInput" placeholder="Arahkan scanner atau ketik..." autofocus>
+            </div>
+
+            <div id="loading" class="loading">Memuat data dari database...</div>
+            <div id="placeholder" class="placeholder-text">Belum ada barang yang di-scan. Silakan scan barcode terlebih dahulu.</div>
+
+            <div id="detailsCard" class="details-card">
+                <div class="details-title">Detail Barang</div>
+                <div class="detail-row"><span class="detail-label">No STO</span><span class="detail-value" id="valSto">-</span></div>
+                <div class="detail-row"><span class="detail-label">Barcode</span><span class="detail-value" id="valBarcode">-</span></div>
+                <div class="detail-row"><span class="detail-label">Article</span><span class="detail-value" id="valArticle">-</span></div>
+                <div class="detail-row"><span class="detail-label">Nama Barang</span><span class="detail-value" id="valNama">-</span></div>
+                <div class="detail-row"><span class="detail-label">Expired Date</span><span class="detail-value" id="valExp">-</span></div>
+                <div class="detail-row"><span class="detail-label">Qty STO</span><span class="detail-value" id="valQtySistem">-</span></div>
+
+                <div class="qty-input-section">
+                    <label for="inputQtyAktual">Input Qty Fisik (Aktual)</label>
+                    <input type="number" id="inputQtyAktual" min="0" placeholder="Masukkan jumlah...">
+                </div>
+
+                <button class="btn-submit" onclick="simpanData()">Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxSUyXrUcHsc6RvKkUOth4sRKhXJthRa2VmI5gRSZloHhqfhfVH7t5uLVePz_w-Ebep/exec";
+
+        const barcodeInput = document.getElementById('barcodeInput');
+        const detailsCard = document.getElementById('detailsCard');
+        const placeholder = document.getElementById('placeholder');
+        const loading = document.getElementById('loading');
+
+        const valSto = document.getElementById('valSto');
+        const valBarcode = document.getElementById('valBarcode');
+        const valArticle = document.getElementById('valArticle');
+        const valNama = document.getElementById('valNama');
+        const valExp = document.getElementById('valExp');
+        const valQtySistem = document.getElementById('valQtySistem');
+        const inputQtyAktual = document.getElementById('inputQtyAktual');
+
+        barcodeInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const kode = barcodeInput.value.trim();
+                if (kode) cariBarang(kode);
+            }
+        });
+
+        function cariBarang(kode) {
+            loading.style.display = 'block';
+            placeholder.style.display = 'none';
+            detailsCard.classList.remove('active');
+
+            fetch(`${WEB_APP_URL}?action=cari&barcode=${encodeURIComponent(kode)}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.status === "success") {
+                        valSto.textContent = data.noSto;
+                        valBarcode.textContent = data.barcode;
+                        valArticle.textContent = data.article;
+                        valNama.textContent = data.namaBarang;
+                        valExp.textContent = data.expiredDate;
+                        valQtySistem.textContent = data.qtySistem;
+                        
+                        inputQtyAktual.value = data.qtySistem;
+                        detailsCard.classList.add('active');
+                        inputQtyAktual.focus();
+                        inputQtyAktual.select();
+                    } else {
+                        alert("Barang dengan barcode tersebut tidak ditemukan di sheet Master!");
+                        placeholder.style.display = 'block';
+                        barcodeInput.value = '';
+                        barcodeInput.focus();
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    alert("Terjadi kesalahan koneksi ke server.");
+                    console.error(error);
+                });
+        }
+
+        function simpanData() {
+            const qtyBaru = inputQtyAktual.value;
+            const barcode = valBarcode.textContent;
+
+            if (qtyBaru === "" || qtyBaru < 0) {
+                alert("Mohon masukkan Qty yang valid!");
+                return;
+            }
+
+            loading.style.display = 'block';
+            detailsCard.classList.remove('active');
+
+            fetch(`${WEB_APP_URL}?action=simpan&barcode=${encodeURIComponent(barcode)}&qtyAktual=${encodeURIComponent(qtyBaru)}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.status === "success") {
+                        alert("Data berhasil disimpan ke 'Barang Receipt' dan dihapus dari 'Stock Transit'!");
+                    } else {
+                        alert("Gagal menyimpan data: " + data.message);
+                    }
+                    
+                    // Reset
+                    barcodeInput.value = '';
+                    placeholder.style.display = 'block';
+                    barcodeInput.focus();
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    alert("Terjadi kesalahan saat menyimpan data.");
+                    console.error(error);
+                });
+        }
+    </script>
+</body>
+</html>
